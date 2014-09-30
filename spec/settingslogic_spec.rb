@@ -4,11 +4,11 @@ describe "Settingslogic" do
   it "should access settings" do
     Settings.setting2.should == 5
   end
-  
+
   it "should access nested settings" do
     Settings.setting1.setting1_child.should == "saweet"
   end
-  
+
   it "should access settings in nested arrays" do
     Settings.array.first.name.should == "first"
   end
@@ -39,7 +39,7 @@ describe "Settingslogic" do
     Settings.language.haskell.paradigm.should == 'functional'
     Settings.language.smalltalk.paradigm.should == 'object oriented'
   end
-  
+
   it "should not collide with global methods" do
     Settings3.nested.collides.does.should == 'not either'
     Settings3[:nested] = 'fooey'
@@ -77,7 +77,7 @@ describe "Settingslogic" do
     end
     e.should_not be_nil
     e.message.should =~ /Missing setting 'erlang' in 'language' section/
-    
+
     Settings.language['erlang'].should be_nil
     Settings.language['erlang'] = 5
     Settings.language['erlang'].should == 5
@@ -168,14 +168,14 @@ describe "Settingslogic" do
   it "should allow a name setting to be overriden" do
     Settings.name.should == 'test'
   end
-  
+
   it "should allow symbolize_keys" do
     Settings.reload!
-    result = Settings.language.haskell.symbolize_keys 
+    result = Settings.language.haskell.symbolize_keys
     result.class.should == Hash
-    result.should == {:paradigm => "functional"} 
+    result.should == {:paradigm => "functional"}
   end
-  
+
   it "should allow symbolize_keys on nested hashes" do
     Settings.reload!
     result = Settings.language.symbolize_keys
@@ -194,6 +194,25 @@ describe "Settingslogic" do
   # masking bugs.
   it "should be a hash" do
     Settings.send(:instance).should be_is_a(Hash)
+  end
+
+  it "should accept keys as symbol or string if activesupport hash extensions present" do
+    require 'active_support/core_ext/hash'
+    Settings.reload!
+    deep = Settings.setting1['deep']
+    deep.class.should == ActiveSupport::HashWithIndifferentAccess
+    deep['another'].should == 'my value'
+    deep[:another].should == 'my value'
+    #simulate un-requiring active_support/core_ext/hash
+    Hash.send :remove_method, :with_indifferent_access
+    Settings.reload!
+  end
+
+  it "should not accept keys as symbol or string if activesupport hash extensions not present" do
+     Settings.reload!
+     deep = Settings.setting1['deep']
+     deep['another'].should == 'my value'
+     deep[:another].should_not == 'my value'
   end
 
   describe "#to_hash" do
