@@ -200,7 +200,7 @@ describe "Settingslogic" do
     require 'active_support/core_ext/hash'
     Settings.reload!
     deep = Settings.setting1['deep']
-    deep.class.should == ActiveSupport::HashWithIndifferentAccess
+    deep.should be_kind_of(ActiveSupport::HashWithIndifferentAccess)
     deep['another'].should == 'my value'
     deep[:another].should == 'my value'
     #simulate un-requiring active_support/core_ext/hash
@@ -211,6 +211,7 @@ describe "Settingslogic" do
   it "should not accept keys as symbol or string if activesupport hash extensions not present" do
      Settings.reload!
      deep = Settings.setting1['deep']
+     deep.should be_kind_of(Hash)
      deep['another'].should == 'my value'
      deep[:another].should_not == 'my value'
   end
